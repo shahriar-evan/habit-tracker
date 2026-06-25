@@ -5,7 +5,8 @@ start tracking. Built with Node.js/Express + Firestore on the backend, and
 vanilla HTML/CSS/JS on the frontend.
 
 ## Structure
-```
+
+```text
 habit-tracker/
 ├── backend/
 │   ├── server.js
@@ -26,21 +27,25 @@ habit-tracker/
 ## Local setup
 
 ### 1. Firebase (Firestore only — no Auth needed)
-- Firebase console → Project Settings → Service Accounts → Generate new private key
+
+- Firebase console → Project Settings → Service Accounts →
+  Generate new private key
 - Save the downloaded file as `backend/serviceAccountKey.json` (this file is
   gitignored — it will never be committed)
 - Create a Firestore database in the same project
 
 ### 2. Firestore indexes
+
 Firestore → Indexes → Add these composite indexes:
 
-| Collection | Fields |
-|-----------|--------|
-| habits | uid ASC, createdAt ASC |
-| checks | uid ASC, date ASC |
-| checks | uid ASC, habitId ASC, date ASC |
+| Collection | Fields                         |
+| ---------- | ------------------------------ |
+| habits     | uid ASC, createdAt ASC         |
+| checks     | uid ASC, date ASC              |
+| checks     | uid ASC, habitId ASC, date ASC |
 
 ### 3. Run the backend
+
 ```bash
 cd backend
 npm install
@@ -48,6 +53,7 @@ npm start        # http://localhost:3000
 ```
 
 ### 4. Run the frontend
+
 Open `frontend/index.html` with a local server (e.g. VS Code "Live Server")
 so `fetch` calls work properly. Make sure `frontend/js/config.js` points at
 your backend URL.
@@ -55,10 +61,12 @@ your backend URL.
 ## Publishing to GitHub
 
 This repo is already set up to keep secrets out of git:
+
 - `backend/serviceAccountKey.json` and any `.env` files are in `.gitignore`
 - Only `backend/.env.example` (a template with no real values) is committed
 
 To publish:
+
 ```bash
 git init
 git add .
@@ -83,11 +91,12 @@ Double-check before pushing: `git status` should **not** list
   `frontend/js/config.js` to your deployed backend URL, then redeploy.
 
 ## API Endpoints
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | /habits | List all habits |
-| POST | /habits | Create habit `{name, emoji}` |
-| DELETE | /habits/:id | Delete habit |
-| GET | /checks?date=YYYY-MM-DD | Get checks for date |
-| POST | /checks/toggle | Toggle check `{habitId, date}` |
-| GET | /streak/:habitId | Get current streak |
+
+| Method | Path                    | Description                    |
+| ------ | ----------------------- | ------------------------------ |
+| GET    | /habits                 | List all habits                |
+| POST   | /habits                 | Create habit `{name, emoji}`   |
+| DELETE | /habits/:id             | Delete habit                   |
+| GET    | /checks?date=YYYY-MM-DD | Get checks for date            |
+| POST   | /checks/toggle          | Toggle check `{habitId, date}` |
+| GET    | /streak/:habitId        | Get current streak             |
