@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Secrets — NEVER commit these
+backend/serviceAccountKey.json
+.env
+.env.local
+
+# Logs / OS files
+firebase-debug.log
+.DS_Store
+*.log

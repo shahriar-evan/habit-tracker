@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Habit Tracker</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    // Set theme before paint, so there's no flash of the wrong theme
+    (function () {
+      var saved = localStorage.getItem('theme');
+      var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body>
+
+<!-- ───────── NAVBAR ───────── -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="#top" class="nav-logo"><img src="assets/logo.png" alt="logo" class="logo-img" /> Habits</a>
+    <div class="nav-links">
+      <a href="#features">Product</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#tools">More Tools</a>
+    </div>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">🌙</button>
+      <button class="nav-btn nav-login" onclick="openModal('login')">Login</button>
+      <button class="nav-btn nav-signup" onclick="openModal('signup')">Sign Up</button>
+    </div>
+  </div>
+  <div class="scroll-progress"><div class="scroll-progress-bar" id="scroll-progress-bar"></div></div>
+</nav>
+
+<!-- Open to everyone, no login required -->
+<div id="app-screen" class="screen">
+
+  <!-- ───────── HERO ───────── -->
+  <section class="hero" id="top">
+    <div class="badge">🔥 HABIT TRACKER</div>
+    <h1 class="hero-title">Build streaks that<br/>actually stick</h1>
+    <p class="hero-sub">Track daily habits, watch your streaks grow, and stay consistent — no sign-up, no friction.</p>
+
+    <div class="dash-card">
+      <div class="dash-head">
+        <span class="dash-crumb"><span class="live-dot"></span> Dashboard <span class="sep">/</span> <span id="today-label">Today</span></span>
+        <span class="dash-dots">•••</span>
+      </div>
+      <div class="dash-stats">
+        <div class="dash-stat">
+          <div class="dash-num" id="stat-total">0</div>
+          <div class="dash-label">Habits</div>
+        </div>
+        <div class="dash-stat accent">
+          <div class="dash-num" id="stat-done">0/0</div>
+          <div class="dash-label">Done Today</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-num" id="stat-streak">0🔥</div>
+          <div class="dash-label">Best Streak</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── WHY IT WORKS ───────── -->
+  <section class="panel panel-compare reveal">
+    <div class="eyebrow center">WHY IT WORKS</div>
+    <h2 class="panel-title center">Consistency breaks down<br/>when tracking gets in the way</h2>
+    <p class="panel-sub center">Most habit trackers add friction right where you need none. Here's the difference.</p>
+
+    <div class="compare-grid">
+      <div class="compare-col">
+        <h3 class="compare-heading fail">Why habit trackers fail</h3>
+        <ul class="compare-list">
+          <li><span class="ic ic-x">✕</span> Sign-up walls before you can log a single habit</li>
+          <li><span class="ic ic-x">✕</span> Miss a day and lose the streak with no easy way back</li>
+          <li><span class="ic ic-x">✕</span> Cluttered dashboards bury the one thing you came to do</li>
+          <li><span class="ic ic-x">✕</span> Your own streak data locked behind a login</li>
+        </ul>
+      </div>
+      <div class="compare-col">
+        <h3 class="compare-heading win">How this tracker helps</h3>
+        <ul class="compare-list">
+          <li><span class="ic ic-check">✓</span> Open the page and start — no account, ever</li>
+          <li><span class="ic ic-check">✓</span> One tap toggles a day on or off, instantly</li>
+          <li><span class="ic ic-check">✓</span> Just your habits and your streaks — nothing else</li>
+          <li><span class="ic ic-check">✓</span> Stats are visible the moment the page loads</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── THIS WEEK ───────── -->
+  <section class="panel panel-light reveal">
+    <div class="eyebrow">THIS WEEK</div>
+    <h2 class="panel-title">Your last 7 days</h2>
+    <div class="calendar-row" id="calendar"></div>
+  </section>
+
+  <!-- ───────── ADD HABIT ───────── -->
+  <section class="panel panel-add reveal">
+    <div class="eyebrow">NEW HABIT</div>
+    <h2 class="panel-title">What do you want to build?</h2>
+    <div class="add-form">
+      <select id="emoji-pick">
+        <option>✅</option><option>💪</option><option>📚</option>
+        <option>💧</option><option>🏃</option><option>🧘</option>
+        <option>🎯</option><option>💻</option><option>🍎</option>
+      </select>
+      <input type="text" id="habit-input" placeholder="New habit name..." maxlength="50" />
+      <button onclick="addHabit()">+ Add</button>
+    </div>
+  </section>
+
+  <!-- ───────── TODAY'S HABITS ───────── -->
+  <section class="panel panel-list reveal">
+    <div class="eyebrow">TODAY</div>
+    <h2 class="panel-title">Today's habits</h2>
+    <div id="habits-list"></div>
+    <div id="loading" class="loading-msg">Loading...</div>
+  </section>
+
+  <!-- ───────── FEATURES ───────── -->
+  <section class="panel panel-features reveal" id="features">
+    <div class="eyebrow center">FEATURES</div>
+    <h2 class="panel-title center">Built to stay out of your way</h2>
+    <p class="panel-sub center">No extra screens, no settings to configure — just the parts that actually keep a habit alive.</p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔥</div>
+        <h3>Streak tracking</h3>
+        <p>Your streak recalculates the instant you check a habit off — no waiting, no manual math.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h3>7-day calendar</h3>
+        <p>See your last week at a glance, so you always know exactly where you stand.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🚪</div>
+        <h3>No login required</h3>
+        <p>Open the page and your habits are right there. No account, no password, no setup.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── PRICING ───────── -->
+  <section class="panel panel-pricing reveal" id="pricing">
+    <div class="eyebrow center">PRICING</div>
+    <h2 class="panel-title center">Simple pricing for every habit</h2>
+    <p class="panel-sub center">Start free, or unlock a few extras if you want to support the project.</p>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-tier">Free</div>
+        <div class="price-amount">$0<span>/forever</span></div>
+        <ul class="price-list">
+          <li><span class="ic ic-check">✓</span> Unlimited habits</li>
+          <li><span class="ic ic-check">✓</span> Streak &amp; calendar tracking</li>
+          <li><span class="ic ic-check">✓</span> No account required</li>
+        </ul>
+        <button class="price-btn" onclick="document.getElementById('habit-input').focus(); document.querySelector('.panel-add').scrollIntoView({behavior:'smooth'})">Start tracking</button>
+      </div>
+
+      <div class="price-card">
+        <div class="price-tier">Plus</div>
+        <div class="price-amount">$1<span>/month</span></div>
+        <ul class="price-list">
+          <li><span class="ic ic-check">✓</span> Everything in Free</li>
+          <li><span class="ic ic-check">✓</span> Custom habit colors &amp; icons</li>
+          <li><span class="ic ic-check">✓</span> Daily reminder notifications</li>
+        </ul>
+        <button class="price-btn price-btn-outline" onclick="openModal('pricing-soon')">Upgrade to Plus</button>
+      </div>
+
+      <div class="price-card popular">
+        <div class="popular-badge">MOST POPULAR</div>
+        <div class="price-tier">Pro</div>
+        <div class="price-amount">$4.99<span>/month</span></div>
+        <ul class="price-list">
+          <li><span class="ic ic-check">✓</span> Everything in Plus</li>
+          <li><span class="ic ic-check">✓</span> Habit history &amp; trend charts</li>
+          <li><span class="ic ic-check">✓</span> Export your data anytime</li>
+        </ul>
+        <button class="price-btn" onclick="openModal('pricing-soon')">Upgrade to Pro</button>
+      </div>
+    </div>
+
+    <p class="price-note">Plus and Pro are preview tiers — payments aren't enabled yet, so for now everything stays free to use.</p>
+  </section>
+
+  <!-- ───────── MORE TOOLS ───────── -->
+  <section class="panel panel-tools reveal" id="tools">
+    <div class="eyebrow center">MORE TOOLS</div>
+    <h2 class="panel-title center">A few extras to help you focus</h2>
+    <p class="panel-sub center">Small, self-contained tools that live right alongside your habits.</p>
+
+    <div class="tools-grid">
+
+      <!-- Focus Timer -->
+      <div class="tool-card">
+        <div class="tool-icon">⏱️</div>
+        <h3>Focus Timer</h3>
+        <div class="timer-display" id="timer-display">25:00</div>
+        <div class="timer-controls">
+          <button class="tool-btn" onclick="timerStart()">Start</button>
+          <button class="tool-btn tool-btn-outline" onclick="timerPause()">Pause</button>
+          <button class="tool-btn tool-btn-outline" onclick="timerReset()">Reset</button>
+        </div>
+      </div>
+
+      <!-- Daily Motivation -->
+      <div class="tool-card">
+        <div class="tool-icon">💬</div>
+        <h3>Daily Motivation</h3>
+        <p class="quote-text" id="quote-text">Tap below for a quick boost.</p>
+        <button class="tool-btn" onclick="newQuote()">New quote</button>
+      </div>
+
+      <!-- Mood Check-in -->
+      <div class="tool-card">
+        <div class="tool-icon">🙂</div>
+        <h3>Mood Check-in</h3>
+        <div class="mood-row">
+          <button class="mood-btn" onclick="setMood('😞')">😞</button>
+          <button class="mood-btn" onclick="setMood('😐')">😐</button>
+          <button class="mood-btn" onclick="setMood('🙂')">🙂</button>
+          <button class="mood-btn" onclick="setMood('😄')">😄</button>
+          <button class="mood-btn" onclick="setMood('🤩')">🤩</button>
+        </div>
+        <p class="mood-status" id="mood-status">No mood logged today</p>
+      </div>
+
+      <!-- Quick Notes -->
+      <div class="tool-card">
+        <div class="tool-icon">📝</div>
+        <h3>Quick Notes</h3>
+        <textarea class="notes-area" id="quick-notes" placeholder="Jot something down..." maxlength="500"></textarea>
+        <p class="notes-saved" id="notes-saved">&nbsp;</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ───────── FAQ ───────── -->
+  <section class="panel panel-faq reveal" id="faq">
+    <div class="eyebrow center">FAQ</div>
+    <h2 class="panel-title center">Frequently asked questions</h2>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Do I need to create an account?<span class="faq-arrow">⌄</span></button>
+        <div class="faq-a">No — just open the page and your habits are ready to use right away.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Is my habit data private?<span class="faq-arrow">⌄</span></button>
+        <div class="faq-a">Anyone who opens this link sees the same shared list, since there's no login to separate users — keep that in mind if you host it publicly.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What happens if I miss a day?<span class="faq-arrow">⌄</span></button>
+        <div class="faq-a">Your streak resets to zero, but your habit list stays exactly as it was — just check in again to start a new streak.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Can I track more than one habit?<span class="faq-arrow">⌄</span></button>
+        <div class="faq-a">Yes — add as many as you like from the "New Habit" section above. Each one gets its own streak and check-in.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Is there a mobile app?<span class="faq-arrow">⌄</span></button>
+        <div class="faq-a">Not yet — this is a simple web app you can open from any browser, including on your phone.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-top">
+      <span><img src="assets/logo.png" alt="logo" class="logo-img-sm" /> Habit Tracker</span>
+      <span class="footer-sep">·</span>
+      <span>Built to keep things simple.</span>
+    </div>
+    <div class="footer-links">
+      <button onclick="openModal('privacy')">Privacy Policy</button>
+      <span class="footer-sep">·</span>
+      <button onclick="openModal('terms')">Terms &amp; Conditions</button>
+      <span class="footer-sep">·</span>
+      <button onclick="openModal('login')">Login</button>
+      <span class="footer-sep">·</span>
+      <button onclick="openModal('signup')">Sign Up</button>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ───────── MODALS ───────── -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this) closeModal()">
+
+  <div class="modal-card" id="modal-login">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3>No login needed</h3>
+    <p>This tracker is open to everyone — there's no account to log into. Just scroll down and start checking off habits.</p>
+    <button class="modal-cta" onclick="closeModal(); document.querySelector('.panel-add').scrollIntoView({behavior:'smooth'})">Take me there</button>
+  </div>
+
+  <div class="modal-card" id="modal-signup">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3>No sign-up needed</h3>
+    <p>There's no account to create. Open the page, add a habit, and it's saved automatically — that's the whole sign-up flow.</p>
+    <button class="modal-cta" onclick="closeModal(); document.querySelector('.panel-add').scrollIntoView({behavior:'smooth'})">Add my first habit</button>
+  </div>
+
+  <div class="modal-card" id="modal-privacy">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3>Privacy Policy</h3>
+    <p>This app doesn't use accounts, cookies, or trackers. Habit names and check-ins are stored so the app can show your streaks.</p>
+    <p>Because there's no login, everyone who opens this page shares the same habit list — please keep that in mind before adding anything sensitive.</p>
+  </div>
+
+  <div class="modal-card" id="modal-terms">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3>Terms &amp; Conditions</h3>
+    <p>This is a free, simple habit tracker provided as-is, with no warranty. Use it to track your habits — please don't rely on it for anything critical.</p>
+    <p>Data may be reset or cleared at any time without notice.</p>
+  </div>
+
+  <div class="modal-card" id="modal-pricing-soon">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3>Payments aren't live yet</h3>
+    <p>Plus and Pro are preview pricing tiers — there's no billing wired up behind them, so nothing will be charged. Everything on this page stays free for now.</p>
+    <button class="modal-cta" onclick="closeModal()">Got it</button>
+  </div>
+
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
