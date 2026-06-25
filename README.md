@@ -1,4 +1,4 @@
-# 🔥 Habits — Habit Tracker
+# Habits — Habit Tracker
 
 A simple, open-access habit tracker. No login, no sign-up — open the page and
 start tracking. Built with Node.js/Express + Firestore on the backend, and
